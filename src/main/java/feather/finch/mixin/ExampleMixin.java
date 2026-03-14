@@ -12,18 +12,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LivingEntity.class)
 public abstract class ExampleMixin {
 
-    // Внедряемся в метод установки последнего полученного урона
-    @Inject(method = "setLastDamageTaken", at = @At("HEAD"))
+    /**
+     * Внедряемся в метод setLastDamageTaken (техническое имя: method_6068).
+     * Мы используем remap = false, чтобы Mixin не пытался переименовать это при сборке.
+     */
+    @Inject(
+        method = "method_6068(F)V", 
+        at = @At("HEAD"), 
+        remap = false
+    )
     private void onSetLastDamage(float amount, CallbackInfo ci) {
         LivingEntity target = (LivingEntity) (Object) this;
         
-        // Проверяем, что урон больше 0 и атакующий — игрок
+        // Проверяем, что атакующий — это игрок на сервере
         if (amount > 0 && target.getAttacker() instanceof ServerPlayerEntity player) {
             
             float hp = target.getHealth();
             float maxHp = target.getMaxHealth();
 
-            // Собираем сообщение
+            // Создаем текст: Урон: [X] | HP: [Y]/[Z]
             Text message = Text.literal("Урон: ")
                 .append(Text.literal(String.format("%.1f", amount)).formatted(Formatting.RED))
                 .append(Text.literal(" | HP: ").formatted(Formatting.GRAY))
@@ -31,7 +38,7 @@ public abstract class ExampleMixin {
                 .append(Text.literal("/").formatted(Formatting.DARK_GREEN))
                 .append(Text.literal(String.format("%.1f", maxHp)).formatted(Formatting.DARK_GREEN));
 
-            // Выводим над хотбаром
+            // Отправляем в Actionbar (над хотбаром)
             player.sendMessage(message, true);
         }
     }
