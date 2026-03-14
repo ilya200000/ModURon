@@ -5,7 +5,6 @@
   "name": "FeatherFinch Damage",
   "description": "Показывает урон в Actionbar",
   "authors": ["ilya200000"],
-  "contact": {},
   "license": "MIT",
   "icon": "assets/featherfinch/icon.png",
   "environment": "*",
