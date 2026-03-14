@@ -13,18 +13,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public abstract class ExampleMixin {
 
-    @Inject(method = "damage", at = @At("RETURN"))
+    // Используем remap = true, чтобы Fabric сам подставил нужное имя метода
+    @Inject(method = "damage", at = @At("RETURN"), remap = true)
     private void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        // Проверяем: урон прошел успешно (return true) и атакующий — это игрок на сервере
+        // Проверяем: урон нанесен (return true) и атакующий — игрок
         if (cir.getReturnValue() && source.getAttacker() instanceof ServerPlayerEntity player) {
             
-            // Создаем текст сообщения: "Урон: [число]"
-            // Округляем до 1 знака после запятой и красим в красный
-            Text message = Text.literal("Урон: ")
-                .append(Text.literal(String.format("%.1f", amount)).formatted(Formatting.RED));
+            // Получаем цель (сущность, в которую "подмешан" этот код)
+            LivingEntity target = (LivingEntity) (Object) this;
+            
+            float currentHealth = target.getHealth();
+            float maxHealth = target.getMaxHealth();
 
-            // Отправляем сообщение именно в Actionbar (над хотбаром)
-            // У ServerPlayerEntity метод sendMessage поддерживает (Text, boolean)
+            // Создаем красивую строку урона и здоровья
+            Text message = Text.literal("Урон: ")
+                .append(Text.literal(String.format("%.1f", amount)).formatted(Formatting.RED))
+                .append(Text.literal(" | HP: ").formatted(Formatting.GRAY))
+                .append(Text.literal(String.format("%.1f", currentHealth)).formatted(Formatting.GREEN))
+                .append(Text.literal("/").formatted(Formatting.DARK_GRAY))
+                .append(Text.literal(String.format("%.1f", maxHealth)).formatted(Formatting.DARK_GREEN));
+
+            // Отправляем в Actionbar (над хотбаром)
             player.sendMessage(message, true);
         }
     }
