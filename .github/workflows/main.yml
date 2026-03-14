@@ -20,11 +20,11 @@ jobs:
       - name: Make gradle executable
         run: chmod +x gradlew
 
-      - name: Generate Sources and Build
-        run: ./gradlew genSources build
+      - name: Build with Gradle
+        run: ./gradlew clean build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FeatherFinch-1.21.1-Jar
+          name: FeatherFinch-1.21.1
           path: build/libs/*.jar
