@@ -6,9 +6,7 @@ plugins {
 version = "1.0.0"
 group = "feather.finch"
 
-base {
-    archivesName = "featherfinch"
-}
+base { archivesName = "featherfinch" }
 
 repositories {
     mavenCentral()
@@ -30,18 +28,13 @@ loom {
 
 processResources {
     inputs.property "version", project.version
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
-    }
+    filesMatching("fabric.mod.json") { expand "version": project.version }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
-}
+tasks.withType(JavaCompile).configureEach { it.options.release = 21 }
 
 java {
     withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
 }
-
