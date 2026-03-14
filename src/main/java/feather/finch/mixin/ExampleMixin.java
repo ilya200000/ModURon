@@ -13,20 +13,28 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public abstract class ExampleMixin {
 
-    // Внедряемся в метод damage (на уровне байткода это method_5643)
-    @Inject(method = "damage", at = @At("RETURN"), remap = true)
+    /**
+     * Внедряемся в метод damage. 
+     * Используем сигнатуру "Lnet/minecraft/entity/damage/DamageSource;F)Z", 
+     * где Z означает возвращаемый тип boolean.
+     */
+    @Inject(
+        method = "damage(Lnet/minecraft/entity/damage/DamageSource;F)Z", 
+        at = @At("RETURN"), 
+        remap = true
+    )
     private void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        // Если урон был нанесен успешно (возвращено true)
-        if (cir.getReturnValue() && source.getAttacker() instanceof ServerPlayerEntity player) {
+        // Проверяем: урон нанесен (метод вернул true) и атакующий — игрок
+        if (Boolean.TRUE.equals(cir.getReturnValue()) && source.getAttacker() instanceof ServerPlayerEntity player) {
             
             // Получаем цель (эту сущность)
             LivingEntity target = (LivingEntity) (Object) this;
             
-            // Информация о здоровье
+            // Считаем показатели
             float hp = target.getHealth();
             float maxHp = target.getMaxHealth();
 
-            // Создаем сообщение: "Урон: X.X | HP: Y.Y/Z.Z"
+            // Собираем текст: Урон: [X] | HP: [Y]/[Z]
             Text message = Text.literal("Урон: ")
                 .append(Text.literal(String.format("%.1f", amount)).formatted(Formatting.RED))
                 .append(Text.literal(" | HP: ").formatted(Formatting.GRAY))
@@ -34,7 +42,7 @@ public abstract class ExampleMixin {
                 .append(Text.literal("/").formatted(Formatting.DARK_GREEN))
                 .append(Text.literal(String.format("%.1f", maxHp)).formatted(Formatting.DARK_GREEN));
 
-            // Выводим в Actionbar
+            // Отправляем в Actionbar
             player.sendMessage(message, true);
         }
     }
