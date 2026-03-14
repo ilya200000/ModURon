@@ -22,11 +22,6 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.102.0+1.21.1"
 }
 
-// Это заставит Mixin работать правильно при сборке
-loom {
-    accessWidenerPath = file("src/main/resources/featherfinch.accesswidener")
-}
-
 processResources {
     inputs.property "version", project.version
     filesMatching("fabric.mod.json") {
