@@ -2,6 +2,7 @@ package feather.finch.mixin;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,19 +11,21 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
-public class ExampleMixin {
-    
+public abstract class ExampleMixin {
+
     @Inject(method = "damage", at = @At("RETURN"))
     private void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        // Проверяем, что урон прошел (cir.getReturnValue() == true) и атаковал игрок
-        if (cir.getReturnValue() && source.getAttacker() != null && source.getAttacker().isPlayer()) {
+        // Проверяем: урон прошел успешно (return true) и атакующий — это игрок на сервере
+        if (cir.getReturnValue() && source.getAttacker() instanceof ServerPlayerEntity player) {
             
-            // Формируем сообщение: "Урон: [число]" красным цветом
+            // Создаем текст сообщения: "Урон: [число]"
+            // Округляем до 1 знака после запятой и красим в красный
             Text message = Text.literal("Урон: ")
                 .append(Text.literal(String.format("%.1f", amount)).formatted(Formatting.RED));
 
-            // Отправляем атакующему в Actionbar (над хотбаром)
-            source.getAttacker().sendMessage(message, true);
+            // Отправляем сообщение именно в Actionbar (над хотбаром)
+            // У ServerPlayerEntity метод sendMessage поддерживает (Text, boolean)
+            player.sendMessage(message, true);
         }
     }
 }
